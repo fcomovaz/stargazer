@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stargazer | Personal Astronomy Assistant</title>
+    <meta name="description" content="Find what's visible in your night sky right now. Get real-time azimuth and altitude for planets, stars, and deep-sky objects.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Astronomy Engine (pure JS, no backend needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+</head>
+<body>
+    <div class="stars-bg"></div>
+
+    <header>
+        <div class="logo">
+            <ion-icon name="planet-outline"></ion-icon>
+            <h1>Stargazer</h1>
+        </div>
+        <div class="header-actions">
+            <button id="help-btn" class="icon-btn" aria-label="Help Guide">
+                <ion-icon name="help-circle-outline"></ion-icon>
+            </button>
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme">
+                <ion-icon name="sunny-outline" class="light-icon"></ion-icon>
+                <ion-icon name="moon-outline" class="dark-icon"></ion-icon>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="controls-card glass-panel">
+            <div class="location-status">
+                <ion-icon name="location-outline"></ion-icon>
+                <span id="loc-text">Location not set</span>
+                <button id="locate-btn" class="primary-btn">Locate Me</button>
+            </div>
+
+            <div class="mode-toggle">
+                <label>Observation Mode</label>
+                <div class="toggle-container">
+                    <input type="radio" id="mode-eyes" name="obs-mode" value="eyes" checked>
+                    <label for="mode-eyes" class="toggle-btn">
+                        <ion-icon name="eye-outline"></ion-icon> Naked Eye
+                    </label>
+                    <input type="radio" id="mode-tele" name="obs-mode" value="tele">
+                    <label for="mode-tele" class="toggle-btn">
+                        <ion-icon name="telescope-outline"></ion-icon> Celestron 50
+                    </label>
+                </div>
+            </div>
+
+            <div class="mode-toggle">
+                <label>Easy Find Guide</label>
+                <label class="switch">
+                    <input type="checkbox" id="easy-find-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="compass-status" id="compass-container" style="display: none;">
+                <ion-icon name="compass-outline"></ion-icon>
+                <span>Device Facing: <strong id="device-az">--°</strong></span>
+            </div>
+        </section>
+
+        <section class="objects-section">
+            <div class="section-header">
+                <h2>Visible Now</h2>
+                <span id="object-count" class="badge">0 objects</span>
+            </div>
+
+            <div id="loader" class="loader" style="display: none;">
+                <div class="spinner"></div>
+                <p>Calculating celestial positions...</p>
+            </div>
+
+            <div id="objects-grid" class="objects-grid">
+                <div class="empty-state" id="empty-state">
+                    <ion-icon name="telescope-outline"></ion-icon>
+                    <p>Click "Locate Me" to see what's in your sky right now.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Template for object card -->
+    <template id="object-card-template">
+        <div class="object-card glass-panel">
+            <div class="card-header">
+                <h3 class="obj-name">Name</h3>
+                <span class="obj-type badge">Type</span>
+            </div>
+            <div class="card-body">
+                <p class="obj-desc">Description</p>
+
+                <div class="finding-guide">
+                    <ion-icon name="navigate-circle-outline"></ion-icon>
+                    <div>
+                        <strong>How to find it:</strong>
+                        <p class="obj-find-guide">Locating...</p>
+                    </div>
+                </div>
+
+                <div class="obj-stats">
+                    <div class="stat">
+                        <span class="label">Magnitude</span>
+                        <span class="value obj-mag">0.0</span>
+                    </div>
+                    <div class="stat alt-az-highlight">
+                        <span class="label">Altitude</span>
+                        <span class="value obj-alt">0°</span>
+                    </div>
+                    <div class="stat alt-az-highlight">
+                        <span class="label">Azimuth</span>
+                        <span class="value obj-az">0°</span>
+                    </div>
+                </div>
+                <div class="obj-tips">
+                    <ion-icon name="bulb-outline"></ion-icon>
+                    <span class="tip-text">Tips go here</span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal">&times;</span>
+            <h2>Cómo usar las medidas</h2>
+            <p>Para encontrar objetos en el cielo, la aplicación te proporciona tres datos clave:</p>
+
+            <div class="help-section">
+                <h3>1. Azimut (Dirección)</h3>
+                <p>El azimut te indica hacia dónde debes girar tu cuerpo. Se mide en grados empezando desde el Norte (0°) en el sentido de las agujas del reloj.</p>
+                <ul>
+                    <li><strong>Norte:</strong> 0°</li>
+                    <li><strong>Este:</strong> 90°</li>
+                    <li><strong>Sur:</strong> 180°</li>
+                    <li><strong>Oeste:</strong> 270°</li>
+                </ul>
+                <p>Usa la herramienta superior "Device Facing" en la app para guiarte como una brújula.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>2. Altitud (Altura)</h3>
+                <p>La altitud es el ángulo sobre el horizonte.</p>
+                <ul>
+                    <li><strong>0°</strong> es el horizonte plano.</li>
+                    <li><strong>90°</strong> es el cenit (justo arriba de tu cabeza).</li>
+                </ul>
+                <p><strong>Truco rápido sin herramientas:</strong> Extiende tu brazo frente a ti y cierra el puño. El ancho de tu puño cerrado representa aproximadamente 10° en el cielo. Si la altitud es 20°, simplemente pon dos puños de altura sobre el horizonte.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>3. Magnitud (Brillo)</h3>
+                <p>La magnitud mide qué tan brillante es un objeto. ¡Cuidado, la escala está al revés!</p>
+                <p>Los números más bajos (o negativos) son los más brillantes. Por ejemplo, la Luna tiene magnitud -12, Sirio tiene -1.4. El límite que el ojo humano promedio puede ver en un cielo oscuro es magnitud 6.0.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
