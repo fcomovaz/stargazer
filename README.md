@@ -2,7 +2,7 @@
 
 A **fully static** astronomy web app that tells you exactly what's visible in your sky right now — planets, stars, and deep-sky objects — with azimuth and altitude coordinates.
 
-**No server, no backend, no Python.** Runs entirely in the browser using vanilla JS.
+**No server, no backend, no Python.** Runs entirely in the browser using vanilla JS. [https://fcomovaz.github.io/stargazer/](https://fcomovaz.github.io/stargazer/)
 
 ## ✨ Features
 
